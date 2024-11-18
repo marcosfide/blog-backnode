@@ -1,0 +1,23 @@
+# Node.js (Backend)
+# dependencies
+/node_modules
+
+# Archivos de configuración locales
+.env
+.env.local
+.env.production
+
+# Archivos de log
+*.log
+
+# Directorios de compilación y salida
+/dist
+/build
+
+# Archivos generados por el entorno de desarrollo
+.pnp/
+.pnp.js
+
+# Archivos de caché y editor
+.vscode/
+.idea/
