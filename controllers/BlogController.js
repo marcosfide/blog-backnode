@@ -1,58 +1,77 @@
-import BlogModel from "../models/BlogModel.js";
+import {
+    getBlogsEntry,
+    getBlogByIdEntry,
+    createBlogEntry,
+    updateBlogEntry,
+    deleteBlogEntry,
+} from '../models/BlogModel.js';
 
+// Obtener todos los blogs
 export const getAllBlogs = async (req, res) => {
     try {
-        const blogs = await BlogModel.findAll()
-        res.json(blogs)
+        const blogs = await getBlogsEntry(); // Llama a la función del modelo
+        res.json(blogs);
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Obtener un blog por ID
 export const getBlog = async (req, res) => {
     try {
-        const blog = await BlogModel.findOne({
-            where:{ id: req.params.id }
-        })
-        res.json(blog)
+        const blog = await getBlogByIdEntry(req.params.id); // Llama a la función del modelo
+        if (blog) {
+            res.json(blog);
+        } else {
+            res.status(404).json({ message: 'Blog no encontrado' });
+        }
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Crear un nuevo blog
 export const createBlog = async (req, res) => {
     try {
-        await BlogModel.create(req.body)
-        res.json({
-            message: 'Registro creado correctamente'
-        })
+        const { title, content } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ message: 'El título y el contenido son requeridos' });
+        }
+        const newBlog = await createBlogEntry(title, content); // Usa el nuevo nombre aquí
+        res.status(201).json(newBlog);
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Actualizar un blog existente
 export const updateBlog = async (req, res) => {
     try {
-        await BlogModel.update(req.body,{
-            where:{ id: req.params.id }
-        })
-        res.json({
-            message: 'Registro actualizado correctamente'
-        })
+        const { title, content } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ message: 'El título y el contenido son requeridos' });
+        }
+        const updatedBlog = await updateBlogEntry(req.params.id, title, content); // Llama a la función del modelo
+        if (updatedBlog) {
+            res.json(updatedBlog);
+        } else {
+            res.status(404).json({ message: 'Blog no encontrado' });
+        }
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Eliminar un blog por ID
 export const deleteBlog = async (req, res) => {
     try {
-        await BlogModel.destroy({
-            where:{ id: req.params.id }
-        })
-        res.json({
-            message: 'Registro eliminado correctamente'
-        })
+        const deletedBlog = await deleteBlogEntry(req.params.id); // Llama a la función del modelo
+        if (deletedBlog) {
+            res.json({ message: 'Registro eliminado correctamente' });
+        } else {
+            res.status(404).json({ message: 'Blog no encontrado' });
+        }
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-}
+};
