@@ -48,9 +48,19 @@ export const createBlog = async (req, res) => {
 export const updateBlog = async (req, res) => {
     try {
         const { title, content } = req.body;
+
+        // Validar si el ID corresponde a un administrador
+        const adminIds = [1, 2, 3, 9];
+        if (adminIds.includes(Number(req.params.id))) {
+            return res.status(403).json({ 
+                message: 'No se pueden editar las publicaciones realizadas por el admin' 
+            });
+        }
+
         if (!title || !content) {
             return res.status(400).json({ message: 'El título y el contenido son requeridos' });
         }
+
         const updatedBlog = await updateBlogEntry(req.params.id, title, content); // Llama a la función del modelo
         if (updatedBlog) {
             res.json(updatedBlog);
@@ -65,7 +75,15 @@ export const updateBlog = async (req, res) => {
 // Eliminar un blog por ID
 export const deleteBlog = async (req, res) => {
     try {
-        const deletedBlog = await deleteBlogEntry(req.params.id); // Llama a la función del modelo
+        // Validar si el ID corresponde a un administrador
+        const adminIds = [1, 2, 3, 9];
+        if (adminIds.includes(Number(req.params.id))) {
+            return res.status(403).json({ 
+                message: 'No se pueden eliminar las publicaciones realizadas por el admin' 
+            });
+        }
+
+        const deletedBlog = await deleteBlogEntry(req.params.id);
         if (deletedBlog) {
             res.json({ message: 'Registro eliminado correctamente' });
         } else {
