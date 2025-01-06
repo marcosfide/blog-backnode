@@ -9,8 +9,8 @@ import {
 // Obtener todos los blogs
 export const getAllBlogs = async (req, res) => {
     try {
-        const blogs = await getBlogsEntry(); // Llama a la función del modelo
-        res.json(blogs);
+        const blogs = await getBlogsEntry();
+        res.json(blogs.map(blog => ({ ...blog.toObject(), id: blog._id })));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -37,7 +37,7 @@ export const createBlog = async (req, res) => {
         if (!title || !content) {
             return res.status(400).json({ message: 'El título y el contenido son requeridos' });
         }
-        const newBlog = await createBlogEntry(title, content); // Usa el nuevo nombre aquí
+        const newBlog = await createBlogEntry(title, content, 'n');
         res.status(201).json(newBlog);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -49,19 +49,23 @@ export const updateBlog = async (req, res) => {
     try {
         const { title, content } = req.body;
 
-        // Validar si el ID corresponde a un administrador
-        const adminIds = [1, 2, 3, 9];
-        if (adminIds.includes(Number(req.params.id))) {
+        if (!title || !content) {
+            return res.status(400).json({ message: 'El título y el contenido son requeridos' });
+        }
+
+        const blog = await getBlogByIdEntry(req.params.id);
+
+        if(!blog){
+            return res.status(404).json({message: 'Blog no encontrado'})
+        }
+
+        if(blog.isAdminPost === 'y'){
             return res.status(403).json({ 
                 message: 'No se pueden editar las publicaciones realizadas por el admin' 
             });
         }
 
-        if (!title || !content) {
-            return res.status(400).json({ message: 'El título y el contenido son requeridos' });
-        }
-
-        const updatedBlog = await updateBlogEntry(req.params.id, title, content); // Llama a la función del modelo
+        const updatedBlog = await updateBlogEntry(req.params.id, title, content);
         if (updatedBlog) {
             res.json(updatedBlog);
         } else {
@@ -75,11 +79,16 @@ export const updateBlog = async (req, res) => {
 // Eliminar un blog por ID
 export const deleteBlog = async (req, res) => {
     try {
-        // Validar si el ID corresponde a un administrador
-        const adminIds = [1, 2, 3, 9];
-        if (adminIds.includes(Number(req.params.id))) {
+
+        const blog = await getBlogByIdEntry(req.params.id);
+
+        if(!blog){
+            return res.status(404).json({message: 'Blog no encontrado'})
+        }
+
+        if(blog.isAdminPost === 'y'){
             return res.status(403).json({ 
-                message: 'No se pueden eliminar las publicaciones realizadas por el admin' 
+                message: 'No se pueden editar las publicaciones realizadas por el admin' 
             });
         }
 
